@@ -50,6 +50,21 @@ const Style = ({ lightMode, fontSizeScale }) => (
     .theme-light .paper-card-inner { background: #faf4eb; color: #1c140e; border-color: #b5a289; }
     .theme-light .dark-panel { background: #efe4d0; color: #2b2118; border: 1px solid #c7b59b; }
 
+    .dark-panel {
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.07),
+        inset 0 -2px 0 rgba(0,0,0,.5),
+        inset 2px 0 0 rgba(255,255,255,.025),
+        inset -2px 0 0 rgba(0,0,0,.3);
+    }
+    .theme-light .dark-panel {
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.9),
+        inset 0 -2px 0 rgba(120,95,60,.28),
+        inset 2px 0 0 rgba(255,255,255,.5),
+        inset -2px 0 0 rgba(120,95,60,.14);
+    }
+
     .bg-crosshatch {
       background-image: repeating-linear-gradient(45deg, rgba(30,22,15,.05) 0, rgba(30,22,15,.05) 1px, transparent 0, transparent 6px),
                         repeating-linear-gradient(-45deg, rgba(30,22,15,.05) 0, rgba(30,22,15,.05) 1px, transparent 0, transparent 6px);
@@ -88,16 +103,61 @@ const Style = ({ lightMode, fontSizeScale }) => (
       background-image: repeating-linear-gradient(0deg, transparent 0, transparent 35px, rgba(122,34,20,.10) 35px, rgba(122,34,20,.10) 36px);
     }
 
+    /* ================= 3D PAPER SYSTEM ================= */
     .paper-wrap {
       position: relative;
       rotate: var(--rot, 0deg);
       translate: calc(var(--mx) * var(--d, 0) * 1px) calc(var(--my) * var(--d, 0) * 1px);
-      filter: drop-shadow(0 22px 20px rgba(0,0,0,.45)) drop-shadow(0 3px 4px rgba(0,0,0,.3));
-      transition: rotate .45s cubic-bezier(.3,1.5,.5,1), scale .45s cubic-bezier(.3,1.5,.5,1), translate .2s linear;
+      transform: perspective(1600px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+      transform-style: preserve-3d;
+      filter: drop-shadow(0 26px 22px rgba(0,0,0,.5)) drop-shadow(0 6px 6px rgba(0,0,0,.35)) drop-shadow(0 1px 0 rgba(255,255,255,.04));
+      transition:
+        rotate .45s cubic-bezier(.3,1.5,.5,1),
+        scale .45s cubic-bezier(.3,1.5,.5,1),
+        translate .2s linear,
+        transform .55s cubic-bezier(.25,1.2,.4,1),
+        filter .35s ease;
+      will-change: transform, filter;
     }
-    .paper-wrap:hover { rotate: 0deg; scale: 1.015; }
+    .paper-wrap:hover {
+      rotate: 0deg;
+      scale: 1.02;
+      filter: drop-shadow(0 34px 30px rgba(0,0,0,.55)) drop-shadow(0 10px 10px rgba(0,0,0,.4)) drop-shadow(0 1px 0 rgba(255,255,255,.06));
+    }
     .paper-wrap.no-hover:hover { rotate: var(--rot, 0deg); scale: 1; }
-    .paper-body { filter: url(#smooth-rough-edge); box-shadow: inset 0 0 35px rgba(100,75,45,.15); }
+
+    .paper-body {
+      filter: url(#smooth-rough-edge);
+      box-shadow:
+        inset 0 0 35px rgba(100,75,45,.15),
+        inset 0 1px 0 rgba(255,255,255,.55),
+        inset 0 -2px 0 rgba(90,65,40,.18),
+        inset 2px 0 0 rgba(255,255,255,.22),
+        inset -2px 0 0 rgba(90,65,40,.12);
+      transform-style: preserve-3d;
+    }
+
+    .paper-glare {
+      position: absolute; inset: 0; pointer-events: none; z-index: 30;
+      background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%),
+        rgba(255,248,225,.42) 0%,
+        rgba(255,244,210,.14) 22%,
+        rgba(255,240,200,.03) 42%,
+        transparent 62%);
+      mix-blend-mode: soft-light;
+      opacity: 0;
+      transition: opacity .35s ease;
+    }
+    .paper-wrap:hover .paper-glare { opacity: 1; }
+
+    .paper-shade {
+      position: absolute; inset: 0; pointer-events: none; z-index: 29;
+      background: linear-gradient(215deg, transparent 55%, rgba(0,0,0,.18) 100%);
+      mix-blend-mode: multiply;
+      opacity: 0;
+      transition: opacity .35s ease;
+    }
+    .paper-wrap:hover .paper-shade { opacity: 1; }
 
     .shape-torn-deckle {
       clip-path: polygon(1% 1%,12% 0%,25% 2%,40% 0%,60% 1%,78% 0%,91% 2%,99% 0%,100% 15%,98% 30%,100% 50%,99% 70%,100% 88%,97% 98%,90% 100%,72% 98%,55% 100%,38% 98%,20% 100%,8% 97%,1% 99%,0% 85%,2% 65%,0% 45%,1% 25%,0% 10%);
@@ -106,7 +166,6 @@ const Style = ({ lightMode, fontSizeScale }) => (
       clip-path: polygon(5% 0%,95% 1%,100% 10%,98% 90%,92% 99%,50% 96%,10% 100%,2% 88%,0% 12%);
     }
 
-    /* ============ SHAPE PREMIUM (bordas limpas, sem rasgado) ============ */
     .shape-premium {
       clip-path: polygon(0% 0.4%, 0.3% 0%, 99.7% 0.2%, 100% 0.5%, 99.9% 99.5%, 99.6% 100%, 0.3% 99.8%, 0% 99.5%);
     }
@@ -177,17 +236,19 @@ const Style = ({ lightMode, fontSizeScale }) => (
     @keyframes seal-thump { 0% { scale: 1.9; opacity: .2 } 55% { scale: .85 } 100% { scale: 1; opacity: 1 } }
     @keyframes stamp-in { 0% { scale: 2.6; opacity: 0 } 100% { scale: 1; opacity: .85 } }
     @keyframes grow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
-    @keyframes rise { from { opacity: 0; translate: 0 40px; filter: blur(4px) } to { opacity: 1; translate: 0 0; filter: blur(0) } }
     @keyframes bar-grow { from { transform: scaleY(0) } to { transform: scaleY(1) } }
-    @keyframes glow-pulse { 0%,100% { box-shadow: 0 8px 16px rgba(0,0,0,.4), 0 0 0 1px rgba(142,191,149,.5) inset, 0 0 12px rgba(142,191,149,.2); } 50% { box-shadow: 0 8px 16px rgba(0,0,0,.4), 0 0 0 1px rgba(142,191,149,.7) inset, 0 0 20px rgba(142,191,149,.4); } }
+
+    @keyframes rise {
+      from { opacity: 0; transform: perspective(1200px) translateY(44px) rotateX(-7deg); filter: blur(4px); }
+      to   { opacity: 1; transform: perspective(1200px) translateY(0) rotateX(0deg); filter: blur(0); }
+    }
 
     .animate-watercolor-1 { animation: watercolor-drift 20s ease-in-out infinite; }
     .animate-watercolor-2 { animation: watercolor-drift 26s ease-in-out infinite reverse; }
     .px-bg { translate: calc(var(--mx) * -14px) calc(var(--my) * -14px); transition: translate .4s linear; }
-    .rise { animation: rise .8s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--dl, 0s); }
+    .rise { animation: rise .9s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--dl, 0s); }
     .bar-anim { transform-origin: bottom; animation: bar-grow .9s cubic-bezier(.2,.8,.2,1) both; }
 
-    /* ============ ABAS ============ */
     .tab-btn {
       position: relative;
       clip-path: polygon(1% 3%, 8% 0%, 18% 3%, 30% 1%, 42% 4%, 55% 0%, 68% 3%, 80% 1%, 92% 4%, 99% 2%, 100% 15%, 98% 30%, 100% 50%, 99% 70%, 100% 88%, 98% 98%, 88% 100%, 75% 97%, 60% 100%, 45% 98%, 30% 100%, 15% 97%, 5% 100%, 0% 88%, 2% 70%, 0% 50%, 1% 30%, 0% 15%);
@@ -197,17 +258,23 @@ const Style = ({ lightMode, fontSizeScale }) => (
       font-size: 11px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      transition: all .35s cubic-bezier(.3, 1.2, .5, 1);
       color: #7d6c56;
       background: rgba(18, 15, 13, 0.88);
       border: none;
       cursor: pointer;
-      position: relative;
       isolation: isolate;
+      filter:
+        drop-shadow(0 4px 0 rgba(0,0,0,.55))
+        drop-shadow(0 8px 12px rgba(0,0,0,.42))
+        drop-shadow(0 1px 0 rgba(255,255,255,.05));
+      transition: filter .25s ease, transform .3s cubic-bezier(.3,1.2,.5,1), color .3s, background .3s;
     }
     .theme-light .tab-btn {
       color: #7a6852;
       background: rgba(200, 188, 168, 0.7);
+      filter:
+        drop-shadow(0 4px 0 rgba(140,115,80,.55))
+        drop-shadow(0 8px 12px rgba(90,70,45,.28));
     }
     .tab-btn::after {
       content: '';
@@ -222,29 +289,224 @@ const Style = ({ lightMode, fontSizeScale }) => (
     .tab-btn:hover {
       color: #e5dec9;
       background: linear-gradient(135deg, #2a2419 0%, #3d4e41 50%, #2a2419 100%);
-      transform: translateY(-2px) scale(1.02);
+      transform: translateY(-3px) scale(1.02);
+      filter:
+        drop-shadow(0 7px 0 rgba(0,0,0,.55))
+        drop-shadow(0 14px 20px rgba(0,0,0,.5));
     }
     .theme-light .tab-btn:hover {
       color: #1c140e;
       background: linear-gradient(135deg, #d5c4a8 0%, #e3ede6 50%, #d5c4a8 100%);
+      filter:
+        drop-shadow(0 7px 0 rgba(140,115,80,.55))
+        drop-shadow(0 14px 20px rgba(90,70,45,.3));
     }
     .tab-btn:hover::after { opacity: 1; }
     .tab-btn.active {
       color: #f5ebd6;
       background: linear-gradient(135deg, #2f3d32 0%, #5c7a5e 50%, #2f3d32 100%);
-      transform: translateY(-3px) scale(1.05);
-      text-shadow: 0 0 10px rgba(142, 191, 149, 0.6);
-      animation: glow-pulse 3s ease-in-out infinite;
+      transform: translateY(-4px) scale(1.05);
+      text-shadow: 0 1px 0 rgba(0,0,0,.5), 0 0 10px rgba(142, 191, 149, 0.6);
+      animation: tab-glow 3s ease-in-out infinite;
     }
     .tab-btn.active::after {
       opacity: 1;
-      background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+      background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.14) 50%, transparent 100%);
+    }
+    .tab-btn:active {
+      transform: translateY(2px) scale(.99);
+      filter: drop-shadow(0 1px 0 rgba(0,0,0,.55)) drop-shadow(0 3px 6px rgba(0,0,0,.4));
+    }
+
+    @keyframes tab-glow {
+      0%,100% {
+        filter:
+          drop-shadow(0 6px 0 rgba(0,0,0,.55))
+          drop-shadow(0 12px 16px rgba(0,0,0,.5))
+          drop-shadow(0 0 10px rgba(142,191,149,.35));
+      }
+      50% {
+        filter:
+          drop-shadow(0 6px 0 rgba(0,0,0,.55))
+          drop-shadow(0 14px 20px rgba(0,0,0,.5))
+          drop-shadow(0 0 22px rgba(142,191,149,.7));
+      }
+    }
+
+    .btn-3d {
+      position: relative;
+      transition: transform .14s cubic-bezier(.3,1.4,.5,1), filter .2s ease;
+      filter:
+        drop-shadow(0 5px 0 rgba(0,0,0,.55))
+        drop-shadow(0 10px 14px rgba(0,0,0,.42))
+        drop-shadow(0 0 0 rgba(142,191,149,0));
+      will-change: transform, filter;
+    }
+    .btn-3d:hover {
+      transform: translateY(-2px);
+      filter:
+        drop-shadow(0 7px 0 rgba(0,0,0,.55))
+        drop-shadow(0 15px 22px rgba(0,0,0,.5))
+        drop-shadow(0 0 14px rgba(142,191,149,.28));
+    }
+    .btn-3d:active {
+      transform: translateY(4px);
+      filter:
+        drop-shadow(0 1px 0 rgba(0,0,0,.55))
+        drop-shadow(0 3px 6px rgba(0,0,0,.35));
     }
 
     .input-ink {
       background: transparent; border: none; border-bottom: 2px dashed #7a6a58; color: inherit; transition: all .3s ease;
+      text-shadow: 0 1px 0 rgba(255,255,255,.06);
     }
     .input-ink:focus { outline: none; border-bottom-style: solid; border-bottom-color: #7a2214; background: rgba(122,34,20,.05); padding-left: 8px; }
+
+    .emboss-text {
+      text-shadow: 0 1px 0 rgba(255,255,255,.06), 0 -1px 1px rgba(0,0,0,.5);
+    }
+    .theme-light .emboss-text {
+      text-shadow: 0 1px 0 rgba(255,255,255,.85), 0 -1px 1px rgba(120,95,60,.28);
+    }
+
+    .frame-3d-inset {
+      box-shadow:
+        inset 0 0 60px rgba(0,0,0,.7),
+        inset 0 2px 0 rgba(255,255,255,.08),
+        inset 0 -3px 0 rgba(0,0,0,.6),
+        inset 3px 0 0 rgba(0,0,0,.4),
+        inset -3px 0 0 rgba(0,0,0,.4);
+    }
+
+    .debtor-scroll::-webkit-scrollbar { width: 4px; display: block; }
+    .debtor-scroll::-webkit-scrollbar-thumb { background: rgba(122,34,20,.35); border-radius: 4px; }
+
+    /* ================= 3D HERO IMAGE (CALENDAR) ================= */
+    .hero-3d-scene {
+      perspective: 1400px;
+      perspective-origin: 50% 50%;
+    }
+    .hero-3d-card {
+      transform-style: preserve-3d;
+      transform:
+        rotateX(var(--hx, 0deg))
+        rotateY(var(--hy, 0deg))
+        translateZ(0);
+      transition: transform .35s cubic-bezier(.25,1,.4,1), box-shadow .35s ease;
+      will-change: transform;
+      box-shadow:
+        0 40px 60px -20px rgba(0,0,0,.65),
+        0 20px 40px -10px rgba(0,0,0,.5),
+        0 8px 16px rgba(0,0,0,.4),
+        0 0 0 1px rgba(142,191,149,.15);
+    }
+    .hero-3d-card:hover {
+      box-shadow:
+        0 60px 90px -20px rgba(0,0,0,.75),
+        0 30px 55px -10px rgba(0,0,0,.6),
+        0 12px 24px rgba(0,0,0,.5),
+        0 0 0 1px rgba(142,191,149,.35),
+        0 0 40px rgba(142,191,149,.18);
+    }
+    .hero-3d-card img {
+      transform: translateZ(30px) scale(1.03);
+      transition: transform .4s cubic-bezier(.25,1,.4,1);
+    }
+    .hero-3d-card:hover img {
+      transform: translateZ(60px) scale(1.06);
+    }
+    /* floating hint badge */
+    .hero-hint {
+      position: absolute; bottom: 14px; left: 14px; z-index: 30;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+      color: #f5ebd6;
+      background: linear-gradient(135deg, rgba(26,23,20,.85), rgba(15,13,11,.95));
+      border: 1px solid rgba(142,191,149,.5);
+      box-shadow: 0 8px 20px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.08);
+      animation: hint-pulse 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .hero-hint::before {
+      content: '⤢';
+      font-size: 14px; color: #8ebf95;
+    }
+    @keyframes hint-pulse {
+      0%,100% { transform: translateY(0); opacity: .85; }
+      50% { transform: translateY(-3px); opacity: 1; }
+    }
+
+    /* ================= LIGHTBOX ================= */
+    .lightbox-backdrop {
+      position: fixed; inset: 0; z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      background: radial-gradient(ellipse at center, rgba(15,13,11,.85) 0%, rgba(5,4,3,.96) 100%);
+      backdrop-filter: blur(14px) saturate(1.1);
+      animation: lb-fade .35s ease both;
+    }
+    @keyframes lb-fade { from { opacity: 0 } to { opacity: 1 } }
+
+    .lightbox-stage {
+      perspective: 1800px;
+      width: min(94vw, 1400px);
+      height: min(88vh, 900px);
+      display: flex; align-items: center; justify-content: center;
+      animation: lb-pop .55s cubic-bezier(.2,1.3,.4,1) both;
+    }
+    @keyframes lb-pop {
+      from { transform: scale(.72) rotateX(12deg); opacity: 0; filter: blur(6px); }
+      to   { transform: scale(1) rotateX(0); opacity: 1; filter: blur(0); }
+    }
+    .lightbox-card {
+      position: relative;
+      width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transform: rotateX(var(--hx, 0deg)) rotateY(var(--hy, 0deg));
+      transition: transform .35s cubic-bezier(.25,1,.4,1), box-shadow .35s ease;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid rgba(142,191,149,.35);
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,.5),
+        0 40px 90px -10px rgba(0,0,0,.85),
+        0 20px 50px -10px rgba(0,0,0,.7),
+        0 0 90px rgba(142,191,149,.18);
+    }
+    .lightbox-card img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      background: #0f0d0b;
+      transform: translateZ(40px);
+    }
+    .lightbox-close {
+      position: absolute; top: 20px; right: 20px; z-index: 20;
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #b33a26, #7a2214);
+      color: #f5ebd6; font-family: 'Cinzel', serif; font-weight: 900; font-size: 20px;
+      border: 2px solid rgba(245,235,214,.4);
+      box-shadow: 0 10px 24px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.25);
+      cursor: pointer;
+      transition: transform .2s ease, filter .2s ease;
+    }
+    .lightbox-close:hover { transform: scale(1.1) rotate(90deg); filter: brightness(1.15); }
+    .lightbox-label {
+      position: absolute; left: 24px; bottom: 20px; z-index: 20;
+      padding: 10px 18px; border-radius: 4px;
+      font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: .3em;
+      text-transform: uppercase; color: #f5ebd6;
+      background: linear-gradient(135deg, rgba(26,23,20,.9), rgba(15,13,11,.95));
+      border: 1px solid rgba(142,191,149,.4);
+      box-shadow: 0 8px 20px rgba(0,0,0,.6);
+    }
+    .lightbox-label span {
+      font-family: 'Pinyon Script', cursive;
+      font-size: 20px; letter-spacing: 0; color: #8ebf95;
+      margin-right: 8px; text-transform: none;
+    }
   `}</style>
 )
 
@@ -254,18 +516,18 @@ const IMAGE_PACKS = [
     name: '🌲 Nature Pack 1',
     description: 'Florestas & Lagos (12 Meses)',
     images: [
-      'https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/1271605/pexels-photo-1271605.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/158063/pexels-photo-158063.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/33041/pexels-photo-33041.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/167699/pexels-photo-167699.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/34950/pexels-photo-34950.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/35537/pexels-photo-35537.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/15286/pexels-photo-15286.jpeg?auto=compress&cs=tinysrgb&w=800'
+      'https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/1271605/pexels-photo-1271605.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/158063/pexels-photo-158063.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/33041/pexels-photo-33041.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/167699/pexels-photo-167699.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/34950/pexels-photo-34950.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/35537/pexels-photo-35537.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/15286/pexels-photo-15286.jpeg?auto=compress&cs=tinysrgb&w=1600'
     ]
   },
   {
@@ -273,18 +535,18 @@ const IMAGE_PACKS = [
     name: '🏞️ Nature Pack 2',
     description: 'Montanhas & Rios (12 Meses)',
     images: [
-      'https://images.pexels.com/photos/147411/pexels-photo-147411.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/167132/pexels-photo-167132.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/1146700/pexels-photo-1146700.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/158251/pexels-photo-158251.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/40784/pexels-photo-40784.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/56866/pexels-photo-56866.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/1371360/pexels-photo-1371360.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/326055/pexels-photo-326055.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/147411/pexels-photo-147411.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/167698/pexels-photo-167698.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/167701/pexels-photo-167701.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/167704/pexels-photo-167704.jpeg?auto=compress&cs=tinysrgb&w=800'
+      'https://images.pexels.com/photos/147411/pexels-photo-147411.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/167132/pexels-photo-167132.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/1146700/pexels-photo-1146700.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/158251/pexels-photo-158251.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/40784/pexels-photo-40784.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/56866/pexels-photo-56866.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/1371360/pexels-photo-1371360.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/326055/pexels-photo-326055.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/147411/pexels-photo-147411.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/167698/pexels-photo-167698.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/167701/pexels-photo-167701.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'https://images.pexels.com/photos/167704/pexels-photo-167704.jpeg?auto=compress&cs=tinysrgb&w=1600'
     ]
   }
 ]
@@ -329,48 +591,95 @@ const playSound = (type = 'click', isMuted = false) => {
         osc.connect(gain); gain.connect(ctx.destination)
         osc.start(ctx.currentTime + idx * 0.04); osc.stop(ctx.currentTime + 0.4 + idx * 0.04)
       })
+    } else if (type === 'whoosh') {
+      const bufferSize = ctx.sampleRate * 0.5
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+      const data = buffer.getChannelData(0)
+      for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize)
+      const noise = ctx.createBufferSource(); noise.buffer = buffer
+      const filter = ctx.createBiquadFilter(); filter.type = 'lowpass'
+      filter.frequency.setValueAtTime(300, ctx.currentTime)
+      filter.frequency.exponentialRampToValueAtTime(2400, ctx.currentTime + 0.25)
+      filter.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.5)
+      const gain = ctx.createGain()
+      gain.gain.setValueAtTime(0.001, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.15)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
+      noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination); noise.start()
     }
   } catch (e) {}
 }
 
-/* Paper com pilha de papéis atrás (opcional) */
-const Paper = ({ rot = 0, depth = 0, className = '', body = '', front, style, children, stack = 0 }) => (
-  <div className={`paper-wrap ${className}`} style={{ '--rot': `${rot}deg`, '--d': depth, ...style }}>
-    {stack > 0 && (
-      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        {stack >= 3 && (
+const Paper = ({ rot = 0, depth = 0, className = '', body = '', front, style, children, stack = 0, tilt = true }) => {
+  const wrapRef = useRef(null)
+
+  const handleMove = (e) => {
+    if (!tilt) return
+    const el = wrapRef.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const px = (e.clientX - r.left) / r.width - 0.5
+    const py = (e.clientY - r.top) / r.height - 0.5
+    el.style.setProperty('--rx', `${(-py * 8).toFixed(2)}deg`)
+    el.style.setProperty('--ry', `${(px * 10).toFixed(2)}deg`)
+    el.style.setProperty('--gx', `${((px + 0.5) * 100).toFixed(1)}%`)
+    el.style.setProperty('--gy', `${((py + 0.5) * 100).toFixed(1)}%`)
+  }
+  const handleLeave = () => {
+    const el = wrapRef.current
+    if (!el) return
+    el.style.setProperty('--rx', '0deg')
+    el.style.setProperty('--ry', '0deg')
+  }
+
+  return (
+    <div
+      ref={wrapRef}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      className={`paper-wrap ${className}`}
+      style={{ '--rot': `${rot}deg`, '--d': depth, ...style }}
+    >
+      {stack > 0 && (
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          {stack >= 3 && (
+            <div className="absolute inset-0" style={{
+              transform: 'translate(20px, 22px) rotate(2.4deg)',
+              background: 'linear-gradient(135deg, #7a6748 0%, #a89878 100%)',
+              borderRadius: '3px',
+              boxShadow: '0 18px 34px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.15)'
+            }} />
+          )}
+          {stack >= 2 && (
+            <div className="absolute inset-0" style={{
+              transform: 'translate(-10px, 14px) rotate(-1.6deg)',
+              background: 'linear-gradient(135deg, #a89878 0%, #b8a888 100%)',
+              borderRadius: '3px',
+              boxShadow: '0 14px 24px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.18)'
+            }} />
+          )}
           <div className="absolute inset-0" style={{
-            transform: 'translate(14px, 16px) rotate(2deg)',
-            background: 'linear-gradient(135deg, #8a7658 0%, #a89878 100%)',
+            transform: 'translate(7px, 9px) rotate(0.6deg)',
+            background: 'linear-gradient(135deg, #c1b394 0%, #c9bca0 100%)',
             borderRadius: '3px',
-            boxShadow: '0 12px 28px rgba(0,0,0,.45)'
+            boxShadow: '0 9px 18px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.22)'
           }} />
-        )}
-        {stack >= 2 && (
-          <div className="absolute inset-0" style={{
-            transform: 'translate(-7px, 10px) rotate(-1.2deg)',
-            background: 'linear-gradient(135deg, #a89878 0%, #b8a888 100%)',
-            borderRadius: '3px',
-            boxShadow: '0 9px 20px rgba(0,0,0,.35)'
-          }} />
-        )}
-        <div className="absolute inset-0" style={{
-          transform: 'translate(5px, 6px) rotate(0.5deg)',
-          background: 'linear-gradient(135deg, #c1b394 0%, #c9bca0 100%)',
-          borderRadius: '3px',
-          boxShadow: '0 6px 14px rgba(0,0,0,.28)'
-        }} />
+        </div>
+      )}
+      {front}
+      <div className={`paper-body relative z-10 ${body}`}>
+        {children}
+        <div className="paper-shade" aria-hidden="true" />
+        <div className="paper-glare" aria-hidden="true" />
       </div>
-    )}
-    {front}
-    <div className={`paper-body relative z-10 ${body}`}>{children}</div>
-  </div>
-)
+    </div>
+  )
+}
 
 const SectionHeader = ({ n, title }) => (
   <div className="flex items-center gap-4 rise cursor-pointer-forced">
-    <span className="font-editorial-script text-4xl text-[#8ebf95]">{n}</span>
-    <h2 className="font-editorial-title text-sm tracking-[0.4em] text-[#8ebf95] uppercase">{title}</h2>
+    <span className="font-editorial-script text-4xl text-[#8ebf95]" style={{ textShadow: '0 2px 0 rgba(0,0,0,.35), 0 0 18px rgba(142,191,149,.35)' }}>{n}</span>
+    <h2 className="font-editorial-title text-sm tracking-[0.4em] text-[#8ebf95] uppercase emboss-text">{title}</h2>
     <div className="h-px flex-1 bg-gradient-to-r from-[#8ebf95]/40 to-transparent" />
   </div>
 )
@@ -443,6 +752,25 @@ const Foreground = () => {
   )
 }
 
+/* ---------- Reusable 3D tilt handlers ---------- */
+const makeTiltHandlers = (ref, maxX = 10, maxY = 14) => ({
+  onMouseMove: (e) => {
+    const el = ref.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const px = (e.clientX - r.left) / r.width - 0.5
+    const py = (e.clientY - r.top) / r.height - 0.5
+    el.style.setProperty('--hx', `${(-py * maxX).toFixed(2)}deg`)
+    el.style.setProperty('--hy', `${(px * maxY).toFixed(2)}deg`)
+  },
+  onMouseLeave: () => {
+    const el = ref.current
+    if (!el) return
+    el.style.setProperty('--hx', '0deg')
+    el.style.setProperty('--hy', '0deg')
+  }
+})
+
 export default function App() {
   const [properties, setProperties] = useState(() => {
     const saved = localStorage.getItem('rental_properties_v5')
@@ -505,6 +833,9 @@ export default function App() {
   const [filterProp, setFilterProp] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
 
+  // Calendar lightbox
+  const [expandedImage, setExpandedImage] = useState(null)
+
   useEffect(() => { localStorage.setItem('rental_properties_v5', JSON.stringify(properties)) }, [properties])
   useEffect(() => { localStorage.setItem('rental_bookings_v5', JSON.stringify(bookings)) }, [bookings])
   useEffect(() => { localStorage.setItem('rental_lightmode', lightMode) }, [lightMode])
@@ -523,6 +854,13 @@ export default function App() {
     window.addEventListener('mousemove', move)
     return () => window.removeEventListener('mousemove', move)
   }, [])
+
+  // Esc closes the lightbox
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') setExpandedImage(null) }
+    if (expandedImage) window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [expandedImage])
 
   const triggerSound = (type) => playSound(type, soundMuted)
 
@@ -745,6 +1083,12 @@ export default function App() {
 
   const isWide = layoutMode === 'wide'
 
+  // Refs for the 3D tilt elements
+  const heroTiltRef = useRef(null)
+  const lightboxTiltRef = useRef(null)
+  const heroHandlers = makeTiltHandlers(heroTiltRef, 9, 12)
+  const lightboxHandlers = makeTiltHandlers(lightboxTiltRef, 6, 9)
+
   return (
     <div className={`min-h-screen w-full ${lightMode ? 'theme-light' : 'theme-dark'} ${isWide ? 'p-2 md:p-4' : 'p-4 md:p-10'} font-editorial-body relative overflow-x-hidden transition-colors duration-500`}>
       <Style lightMode={lightMode} fontSizeScale={fontSizeScale} />
@@ -752,7 +1096,8 @@ export default function App() {
       <Foreground />
 
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-[100] bg-[#3d4e41] text-[#f5ebd6] px-6 py-3 rounded shadow-2xl font-editorial-title text-sm tracking-widest border border-[#8ebf95] rise">
+        <div className="fixed top-6 right-6 z-[600] bg-[#3d4e41] text-[#f5ebd6] px-6 py-3 rounded font-editorial-title text-sm tracking-widest border border-[#8ebf95] rise"
+          style={{ boxShadow: '0 16px 30px rgba(0,0,0,.5), 0 4px 0 rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.12)' }}>
           ✦ {toastMessage}
         </div>
       )}
@@ -778,17 +1123,17 @@ export default function App() {
         <header className="pt-4 pb-6 flex flex-col md:flex-row items-baseline justify-between gap-6 border-b border-[#3a3026]/30 rise">
           <div>
             <div className="flex items-center gap-4">
-              <span className="font-editorial-script text-5xl text-[#8ebf95] -rotate-6 block">Diário de</span>
+              <span className="font-editorial-script text-5xl text-[#8ebf95] -rotate-6 block" style={{ textShadow: '0 3px 0 rgba(0,0,0,.4), 0 0 22px rgba(142,191,149,.35)' }}>Diário de</span>
               <span className="font-editorial-mono text-xs tracking-widest text-[#7a6a58] uppercase">/ Versão Ultra Aprimorada</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-editorial-display tracking-tight mt-1 leading-none">RentalManager</h1>
-            <p className="font-editorial-script text-2xl text-[#8ebf95] mt-1">Gestão de Chalés 4x5m para {ownerName}</p>
+            <h1 className="text-4xl md:text-6xl font-editorial-display tracking-tight mt-1 leading-none emboss-text">RentalManager</h1>
+            <p className="font-editorial-script text-2xl text-[#8ebf95] mt-1" style={{ textShadow: '0 1px 0 rgba(0,0,0,.35)' }}>Gestão de Chalés 4x5m para {ownerName}</p>
           </div>
           <div className="flex flex-col items-end gap-2 text-right">
             <div className="flex items-center gap-3 mb-1">
               <span className="font-editorial-mono text-[10px] tracking-[0.3em] text-[#8ebf95] uppercase border-b border-[#3a3026] pb-1">REGISTRO OFICIAL</span>
             </div>
-            <span className="font-editorial-title text-lg font-bold">Florianópolis, SC</span>
+            <span className="font-editorial-title text-lg font-bold emboss-text">Florianópolis, SC</span>
             <span className="font-editorial-mono text-xs text-[#8c7a65]">{properties.length} UNIDADES • {bookings.length} FICHAS</span>
           </div>
         </header>
@@ -819,26 +1164,26 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <Paper rot={-1.2} depth={8}>
                 <div className="dark-panel p-8 shape-torn-deckle border-l-4 border-[#8ebf95] text-[#8ebf95]">
-                  <span className="font-editorial-script text-3xl block mb-1">Rendimento</span>
+                  <span className="font-editorial-script text-3xl block mb-1" style={{ textShadow: '0 2px 0 rgba(0,0,0,.4)' }}>Rendimento</span>
                   <span className="font-editorial-mono text-[10px] tracking-widest opacity-80 uppercase block">✦ RECEITA CONFIRMADA</span>
-                  <p className="text-4xl md:text-5xl font-editorial-title font-bold mt-2">R$ {formatBRL(shownRevenue)}</p>
+                  <p className="text-4xl md:text-5xl font-editorial-title font-bold mt-2 emboss-text">R$ {formatBRL(shownRevenue)}</p>
                   <div className="grow-line mt-3 opacity-60" />
                 </div>
               </Paper>
 
               <Paper rot={0.9} depth={16} front={<span className="ember" />}>
                 <div className="dark-panel p-8 shape-torn-deckle border-l-4 border-[#e06d53] text-[#e06d53]">
-                  <span className="font-editorial-script text-3xl block mb-1">Aguardando</span>
+                  <span className="font-editorial-script text-3xl block mb-1" style={{ textShadow: '0 2px 0 rgba(0,0,0,.4)' }}>Aguardando</span>
                   <span className="font-editorial-mono text-[10px] tracking-widest opacity-80 uppercase block">✦ SALDO A RECOLHER</span>
-                  <p className="text-4xl md:text-5xl font-editorial-title font-bold mt-2">R$ {formatBRL(shownPending)}</p>
+                  <p className="text-4xl md:text-5xl font-editorial-title font-bold mt-2 emboss-text">R$ {formatBRL(shownPending)}</p>
                 </div>
               </Paper>
 
               <Paper rot={-0.5} depth={4} front={<span className="tape" />}>
                 <div className="dark-panel p-8 pt-10 shape-torn-deckle border-l-4 border-[#8ebf95]">
-                  <span className="font-editorial-script text-3xl text-[#8ebf95] block mb-1">Histórico</span>
+                  <span className="font-editorial-script text-3xl text-[#8ebf95] block mb-1" style={{ textShadow: '0 2px 0 rgba(0,0,0,.4)' }}>Histórico</span>
                   <span className="font-editorial-mono text-[10px] tracking-widest opacity-80 uppercase block">✦ HÓSPEDES REGISTRADOS</span>
-                  <p className="text-4xl md:text-5xl font-editorial-title font-bold mt-2">
+                  <p className="text-4xl md:text-5xl font-editorial-title font-bold mt-2 emboss-text">
                     {bookings.length} <span className="text-xl font-editorial-script text-[#8ebf95]">fichas</span>
                   </p>
                 </div>
@@ -848,7 +1193,7 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <Paper rot={0.5} depth={6}>
                 <div className="paper-card-inner bg-crosshatch p-8 shape-torn-deckle border-t-4 border-[#8ebf95]">
-                  <h3 className="font-editorial-title text-xl font-bold uppercase mb-4">🏠 Chalés Cadastrados (4x5m, 2 Andares)</h3>
+                  <h3 className="font-editorial-title text-xl font-bold uppercase mb-4 emboss-text">🏠 Chalés Cadastrados (4x5m, 2 Andares)</h3>
                   <div className="space-y-4">
                     {properties.map(p => {
                       const count = bookings.filter(b => b.propertyId === p.id).length
@@ -858,7 +1203,8 @@ export default function App() {
                             <span className="font-editorial-title font-bold block">{p.name}</span>
                             <span className="font-editorial-mono text-xs text-[#7a6a58]">{p.address} • {p.specs}</span>
                           </div>
-                          <span className="font-editorial-mono text-xs bg-[#3d4e41] text-[#f5ebd6] px-2.5 py-1 rounded">
+                          <span className="font-editorial-mono text-xs bg-[#3d4e41] text-[#f5ebd6] px-2.5 py-1 rounded"
+                            style={{ boxShadow: '0 3px 0 rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.15)' }}>
                             {count} estadias
                           </span>
                         </div>
@@ -870,15 +1216,15 @@ export default function App() {
 
               <Paper rot={-0.8} depth={6}>
                 <div className="paper-card-inner bg-crosshatch p-8 shape-torn-deckle border-t-4 border-[#e06d53]">
-                  <h3 className="font-editorial-title text-xl font-bold uppercase mb-4">⚡ Atalhos do Sistema</h3>
+                  <h3 className="font-editorial-title text-xl font-bold uppercase mb-4 emboss-text">⚡ Atalhos do Sistema</h3>
                   <p className="font-editorial-body text-lg mb-6">
                     Acesse o Termo de Hospedagem para registrar novos hóspedes ou o Calendário para visualizar a agenda.
                   </p>
                   <div className="flex gap-4">
-                    <button onClick={() => { setActiveTab('bookings'); triggerSound('paper') }} className="px-4 py-2 bg-[#3d4e41] text-[#f5ebd6] font-editorial-title text-xs uppercase font-bold shape-torn-deckle cursor-pointer-forced">
+                    <button onClick={() => { setActiveTab('bookings'); triggerSound('paper') }} className="btn-3d px-4 py-2 bg-[#3d4e41] text-[#f5ebd6] font-editorial-title text-xs uppercase font-bold shape-torn-deckle cursor-pointer-forced">
                       + Novo Termo
                     </button>
-                    <button onClick={() => { setActiveTab('calendar'); triggerSound('paper') }} className="px-4 py-2 border border-[#3d4e41] font-editorial-title text-xs uppercase font-bold shape-torn-deckle cursor-pointer-forced">
+                    <button onClick={() => { setActiveTab('calendar'); triggerSound('paper') }} className="btn-3d px-4 py-2 border border-[#3d4e41] font-editorial-title text-xs uppercase font-bold shape-torn-deckle cursor-pointer-forced">
                       Ver Calendário 90s
                     </button>
                   </div>
@@ -897,8 +1243,8 @@ export default function App() {
               <Paper rot={-1} depth={8} className="lg:col-span-5" front={<span className="tape" />}>
                 <div className="dark-panel bg-blueprint p-8 pt-10 shape-torn-deckle border border-[#8ebf95]/60 shadow-2xl">
                   <div className="border-b border-[#8ebf95]/40 pb-4 mb-6">
-                    <span className="font-editorial-script text-3xl text-[#8ebf95] block">Drafting Room</span>
-                    <h3 className="font-editorial-title text-xl font-bold uppercase text-[#e5dec9]">
+                    <span className="font-editorial-script text-3xl text-[#8ebf95] block" style={{ textShadow: '0 2px 0 rgba(0,0,0,.4)' }}>Drafting Room</span>
+                    <h3 className="font-editorial-title text-xl font-bold uppercase text-[#e5dec9] emboss-text">
                       {editingProperty ? 'Editar Chalé Blueprint' : 'Novo Chalé (4x5m / 2 Andares)'}
                     </h3>
                   </div>
@@ -936,11 +1282,11 @@ export default function App() {
                     </Field>
 
                     <div className="flex gap-4 pt-2">
-                      <button type="submit" className="flex-1 py-4 bg-[#8ebf95] text-[#0d1611] font-editorial-title text-xs font-bold uppercase tracking-widest hover:bg-[#a3d4a9] transition-all shape-torn-deckle shadow-md cursor-pointer-forced">
+                      <button type="submit" className="btn-3d flex-1 py-4 bg-[#8ebf95] text-[#0d1611] font-editorial-title text-xs font-bold uppercase tracking-widest hover:bg-[#a3d4a9] transition-all shape-torn-deckle cursor-pointer-forced">
                         {editingProperty ? 'Salvar Chalé' : '+ Desenhar Blueprint'}
                       </button>
                       {editingProperty && (
-                        <button type="button" onClick={() => setEditingProperty(null)} className="px-4 py-4 bg-[#7a2214] text-[#f5ebd6] font-editorial-title text-xs uppercase font-bold shape-torn-deckle cursor-pointer-forced">
+                        <button type="button" onClick={() => setEditingProperty(null)} className="btn-3d px-4 py-4 bg-[#7a2214] text-[#f5ebd6] font-editorial-title text-xs uppercase font-bold shape-torn-deckle cursor-pointer-forced">
                           Cancelar
                         </button>
                       )}
@@ -960,7 +1306,7 @@ export default function App() {
                           <div className="flex justify-between items-start border-b border-[#8ebf95]/50 pb-4 mb-4">
                             <div>
                               <span className="font-editorial-script text-2xl text-[#8ebf95]">Blueprint Arch. 0{idx + 1}</span>
-                              <h3 className="font-editorial-title text-xl font-bold uppercase tracking-wide text-[#e5dec9]">{p.name}</h3>
+                              <h3 className="font-editorial-title text-xl font-bold uppercase tracking-wide text-[#e5dec9] emboss-text">{p.name}</h3>
                             </div>
                             <div className="flex gap-2">
                               <button onClick={() => { setEditingProperty(p); triggerSound('click') }} className="font-editorial-mono text-[10px] text-[#8ebf95] font-bold uppercase hover:underline cursor-pointer-forced">Editar</button>
@@ -970,7 +1316,8 @@ export default function App() {
 
                           <p className="font-editorial-mono text-xs mb-3 uppercase tracking-wider text-[#e5dec9]/90">📍 {p.address}</p>
 
-                          <div className="p-4 bg-[#0d1611]/80 border border-[#8ebf95]/60 mb-4 rounded font-editorial-mono text-xs text-[#8ebf95] space-y-1">
+                          <div className="p-4 bg-[#0d1611]/80 border border-[#8ebf95]/60 mb-4 rounded font-editorial-mono text-xs text-[#8ebf95] space-y-1"
+                            style={{ boxShadow: 'inset 0 2px 8px rgba(0,0,0,.5), inset 0 -1px 0 rgba(255,255,255,.05)' }}>
                             <div className="font-bold border-b border-[#8ebf95]/30 pb-1 mb-1">📐 ESPECIFICAÇÕES TÉCNICAS</div>
                             <div>• Dimensão Base: 4 x 5 metros</div>
                             <div>• Estrutura: 2 Andares</div>
@@ -1005,15 +1352,14 @@ export default function App() {
           <div className="space-y-12 rise">
             <SectionHeader n="III." title="Termo de Hospedagem & Registro Histórico de Hóspedes" />
 
-            {/* Termo premium com pilha atrás */}
             <Paper rot={0.5} depth={-4} stack={3} front={<div className={`seal ${stamped ? 'stamped' : ''}`}><span className="font-editorial-script text-3xl">Selo</span></div>}>
               <div className="paper-card-inner bg-ledger p-8 md:p-14 shape-premium shadow-2xl border-2 border-[#b5a289]">
                 <div className="border-b-2 border-[#7a2214] pb-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                   <div>
-                    <span className="font-editorial-script text-4xl text-[#7a2214] block">
+                    <span className="font-editorial-script text-4xl text-[#7a2214] block" style={{ textShadow: '0 2px 0 rgba(255,255,255,.5), 0 -1px 0 rgba(0,0,0,.15)' }}>
                       {editingBooking ? 'Editando Registro Folio' : 'Hotel Registry Folio'}
                     </span>
-                    <h3 className="font-editorial-title text-2xl md:text-3xl font-bold uppercase tracking-wider text-[#1c140e]">
+                    <h3 className="font-editorial-title text-2xl md:text-3xl font-bold uppercase tracking-wider text-[#1c140e] emboss-text">
                       {editingBooking ? `Ficha Histórica #${editingBooking.id}` : 'Termo Oficial de Hospedagem & Condições'}
                     </h3>
                   </div>
@@ -1024,7 +1370,8 @@ export default function App() {
                 </div>
 
                 {conflictWarning && (
-                  <div className="mb-6 p-4 bg-[#7a2214]/20 border-l-4 border-[#7a2214] text-[#7a2214] font-editorial-title text-xs font-bold uppercase">
+                  <div className="mb-6 p-4 bg-[#7a2214]/20 border-l-4 border-[#7a2214] text-[#7a2214] font-editorial-title text-xs font-bold uppercase"
+                    style={{ boxShadow: 'inset 0 2px 8px rgba(122,34,20,.15)' }}>
                     ⚠️ {conflictWarning}
                   </div>
                 )}
@@ -1080,17 +1427,18 @@ export default function App() {
                     </Field>
                   </div>
 
-                  <div className="p-4 bg-[#cfc3ab]/40 border border-[#b5a289] text-xs font-editorial-mono text-[#2b2118] space-y-1 rounded">
+                  <div className="p-4 bg-[#cfc3ab]/40 border border-[#b5a289] text-xs font-editorial-mono text-[#2b2118] space-y-1 rounded"
+                    style={{ boxShadow: 'inset 0 2px 6px rgba(120,95,60,.15), inset 0 -1px 0 rgba(255,255,255,.4)' }}>
                     <div className="font-bold uppercase tracking-wider">✦ CLÁUSULAS E TERMOS DE HOSPEDAGEM:</div>
                     <p>1. O hóspede declara estar ciente das regras de preservação do chalé (4x5m, 2 andares). 2. Proibido fumar no interior da madeira. 3. O saldo restante deverá ser quitado na entrada.</p>
                   </div>
 
                   <div className="pt-4 flex gap-4">
-                    <button type="submit" className="flex-1 py-4 bg-[#3d4e41] hover:bg-[#4f6454] text-[#f5ebd6] font-editorial-title font-bold text-xs uppercase tracking-[0.2em] transition-all shadow-lg shape-premium cursor-pointer-forced">
+                    <button type="submit" className="btn-3d flex-1 py-4 bg-[#3d4e41] hover:bg-[#4f6454] text-[#f5ebd6] font-editorial-title font-bold text-xs uppercase tracking-[0.2em] transition-colors shape-premium cursor-pointer-forced">
                       {editingBooking ? '✦ Salvar Alterações no Folio' : '✦ Assinar e Carimbar Termo de Hospedagem'}
                     </button>
                     {editingBooking && (
-                      <button type="button" onClick={() => setEditingBooking(null)} className="px-6 py-4 bg-[#7a2214] text-[#f5ebd6] font-editorial-title text-xs uppercase font-bold shape-premium cursor-pointer-forced">
+                      <button type="button" onClick={() => setEditingBooking(null)} className="btn-3d px-6 py-4 bg-[#7a2214] text-[#f5ebd6] font-editorial-title text-xs uppercase font-bold shape-premium cursor-pointer-forced">
                         Cancelar
                       </button>
                     )}
@@ -1151,10 +1499,11 @@ export default function App() {
                         <div>
                           <div className="border-b border-[#8c7d6b] pb-4 mb-4 flex justify-between items-start">
                             <div>
-                              <span className="font-editorial-mono text-[9px] font-bold uppercase tracking-widest bg-[#3d4e41] text-[#f5ebd6] px-2 py-0.5 inline-block mb-2">
+                              <span className="font-editorial-mono text-[9px] font-bold uppercase tracking-widest bg-[#3d4e41] text-[#f5ebd6] px-2 py-0.5 inline-block mb-2"
+                                style={{ boxShadow: '0 2px 0 rgba(0,0,0,.35)' }}>
                                 {prop?.name || 'Chalé'}
                               </span>
-                              <h4 className="text-2xl font-editorial-title font-bold leading-tight">{b.guestName}</h4>
+                              <h4 className="text-2xl font-editorial-title font-bold leading-tight emboss-text">{b.guestName}</h4>
                             </div>
                             <div className="flex gap-2">
                               <button onClick={() => { setEditingBooking(b); triggerSound('click') }} className="font-editorial-mono text-[10px] text-[#3d4e41] font-bold uppercase hover:underline cursor-pointer-forced">Editar</button>
@@ -1172,7 +1521,8 @@ export default function App() {
                             <p className="flex justify-between"><span className="font-editorial-title text-xs font-bold">SAÍDA</span><span>{b.checkOut || '—'}</span></p>
                           </div>
 
-                          <div className="p-3 border-y border-[#8c7d6b] mb-6 space-y-1 bg-[#cfc3ab]/30">
+                          <div className="p-3 border-y border-[#8c7d6b] mb-6 space-y-1 bg-[#cfc3ab]/30"
+                            style={{ boxShadow: 'inset 0 2px 6px rgba(120,95,60,.12)' }}>
                             <div className="flex justify-between items-baseline">
                               <span className="font-editorial-title text-[10px] font-bold uppercase">VALOR TOTAL</span>
                               <span className="font-editorial-title font-bold text-xl">R$ {formatBRL(b.totalAmount)}</span>
@@ -1216,38 +1566,37 @@ export default function App() {
                 <div className="dark-panel p-6 shape-torn-deckle border-t-4 border-[#8ebf95]">
                   <span className="font-editorial-script text-2xl text-[#8ebf95] block mb-1">Recebido</span>
                   <span className="font-editorial-mono text-[10px] tracking-widest opacity-80 uppercase block">✦ CAIXA LÍQUIDO</span>
-                  <p className="text-2xl md:text-3xl font-editorial-title font-bold mt-2 text-[#8ebf95]">R$ {formatBRL(totalRevenue)}</p>
+                  <p className="text-2xl md:text-3xl font-editorial-title font-bold mt-2 text-[#8ebf95] emboss-text">R$ {formatBRL(totalRevenue)}</p>
                 </div>
               </Paper>
               <Paper rot={0.5} depth={6}>
                 <div className="dark-panel p-6 shape-torn-deckle border-t-4 border-[#e06d53]">
                   <span className="font-editorial-script text-2xl text-[#e06d53] block mb-1">A Receber</span>
                   <span className="font-editorial-mono text-[10px] tracking-widest opacity-80 uppercase block">✦ SALDOS PENDENTES</span>
-                  <p className="text-2xl md:text-3xl font-editorial-title font-bold mt-2 text-[#e06d53]">R$ {formatBRL(pendingRevenue)}</p>
+                  <p className="text-2xl md:text-3xl font-editorial-title font-bold mt-2 text-[#e06d53] emboss-text">R$ {formatBRL(pendingRevenue)}</p>
                 </div>
               </Paper>
               <Paper rot={1} depth={6}>
                 <div className="dark-panel p-6 shape-torn-deckle border-t-4 border-[#e5dec9]">
                   <span className="font-editorial-script text-2xl text-[#e5dec9] block mb-1">Projeção</span>
                   <span className="font-editorial-mono text-[10px] tracking-widest opacity-80 uppercase block">✦ TOTAL CONTRATADO</span>
-                  <p className="text-2xl md:text-3xl font-editorial-title font-bold mt-2">R$ {formatBRL(totalRevenue + pendingRevenue)}</p>
+                  <p className="text-2xl md:text-3xl font-editorial-title font-bold mt-2 emboss-text">R$ {formatBRL(totalRevenue + pendingRevenue)}</p>
                 </div>
               </Paper>
               <Paper rot={-0.7} depth={6} front={<span className="tape" style={{ width: 70, marginLeft: -35 }} />}>
                 <div className="dark-panel p-6 pt-9 shape-torn-deckle border-t-4 border-[#8ebf95]">
                   <span className="font-editorial-script text-2xl text-[#8ebf95] block mb-1">Ticket Médio</span>
                   <span className="font-editorial-mono text-[10px] tracking-widest opacity-80 uppercase block">✦ POR CONTRATO</span>
-                  <p className="text-2xl md:text-3xl font-editorial-title font-bold mt-2">R$ {formatBRL(avgTicket)}</p>
+                  <p className="text-2xl md:text-3xl font-editorial-title font-bold mt-2 emboss-text">R$ {formatBRL(avgTicket)}</p>
                 </div>
               </Paper>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              {/* RECEITA MENSAL com hover fade */}
               <Paper rot={-0.6} depth={7} className="lg:col-span-7" front={<span className="tape" />}>
                 <div className="paper-card-inner bg-crosshatch p-8 shape-torn-deckle border-t-4 border-[#3d4e41] h-full flex flex-col">
                   <div className="flex justify-between items-baseline mb-6">
-                    <h3 className="font-editorial-title text-xl font-bold uppercase">📈 Receita Mensal</h3>
+                    <h3 className="font-editorial-title text-xl font-bold uppercase emboss-text">📈 Receita Mensal</h3>
                     <span className="font-editorial-mono text-[10px] uppercase opacity-70">Últimos {monthlyRevenue.length || 0} meses</span>
                   </div>
 
@@ -1264,7 +1613,7 @@ export default function App() {
                           </span>
                           <div
                             className="w-full bg-gradient-to-t from-[#3d4e41] via-[#5c7a5e] to-[#8ebf95] rounded-t shadow-md bar-anim opacity-30 group-hover:opacity-100 transition-opacity duration-300"
-                            style={{ height: `${pct}%`, animationDelay: `${i * 0.08}s` }}
+                            style={{ height: `${pct}%`, animationDelay: `${i * 0.08}s`, boxShadow: '0 6px 12px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.35)' }}
                           />
                         </div>
                       )
@@ -1284,18 +1633,17 @@ export default function App() {
                 </div>
               </Paper>
 
-              {/* STATUS DE PAGAMENTO (mês atual) + devedores detalhados */}
               <Paper rot={0.7} depth={7} className="lg:col-span-5" front={<span className="tape" />}>
                 <div className="paper-card-inner bg-crosshatch p-8 shape-torn-deckle border-t-4 border-[#7a2214] h-full flex flex-col">
                   <div className="flex justify-between items-baseline mb-4 flex-wrap gap-2">
-                    <h3 className="font-editorial-title text-xl font-bold uppercase">🥧 Status de Pagamento</h3>
+                    <h3 className="font-editorial-title text-xl font-bold uppercase emboss-text">🥧 Status de Pagamento</h3>
                     <span className="font-editorial-mono text-[10px] uppercase opacity-70 px-2 py-0.5 bg-[#7a2214]/10 rounded border border-[#7a2214]/30 text-[#7a2214]">
                       ✦ {currentMonthLabel}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-5">
-                    <svg viewBox="0 0 42 42" className="w-32 h-32 -rotate-90 shrink-0">
+                    <svg viewBox="0 0 42 42" className="w-32 h-32 -rotate-90 shrink-0" style={{ filter: 'drop-shadow(0 6px 10px rgba(0,0,0,.25))' }}>
                       <circle cx="21" cy="21" r="15.915" fill="none" stroke="#7a6a58" strokeWidth="5" opacity="0.22" />
                       <circle cx="21" cy="21" r="15.915" fill="none" stroke="#8ebf95" strokeWidth="5"
                         strokeDasharray={`${(monthPaidCount / monthTotalB) * 100} ${100 - (monthPaidCount / monthTotalB) * 100}`}
@@ -1309,17 +1657,17 @@ export default function App() {
                     </svg>
                     <div className="space-y-2 font-editorial-title text-xs flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-sm bg-[#8ebf95] shrink-0" />
+                        <span className="w-3 h-3 rounded-sm bg-[#8ebf95] shrink-0" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.4), 0 1px 2px rgba(0,0,0,.25)' }} />
                         <span className="font-bold uppercase">Quitados</span>
                         <span className="font-editorial-mono ml-auto">{monthPaidCount}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-sm bg-[#e5a53c] shrink-0" />
+                        <span className="w-3 h-3 rounded-sm bg-[#e5a53c] shrink-0" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.4), 0 1px 2px rgba(0,0,0,.25)' }} />
                         <span className="font-bold uppercase">Parciais</span>
                         <span className="font-editorial-mono ml-auto">{monthPartialCount}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-sm bg-[#7a2214] shrink-0" />
+                        <span className="w-3 h-3 rounded-sm bg-[#7a2214] shrink-0" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.25)' }} />
                         <span className="font-bold uppercase">Pendentes</span>
                         <span className="font-editorial-mono ml-auto">{monthUnpaidCount}</span>
                       </div>
@@ -1331,22 +1679,23 @@ export default function App() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 mt-4 text-center">
-                    <div className="p-2 bg-[#8ebf95]/15 border border-[#8ebf95]/40 rounded">
+                    <div className="p-2 bg-[#8ebf95]/15 border border-[#8ebf95]/40 rounded"
+                      style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.4), 0 2px 4px rgba(0,0,0,.08)' }}>
                       <div className="font-editorial-mono text-[9px] uppercase opacity-70">Recebido no mês</div>
                       <div className="font-editorial-title font-bold text-sm text-[#3d4e41]">R$ {formatBRL(monthCollected)}</div>
                     </div>
-                    <div className="p-2 bg-[#e06d53]/15 border border-[#e06d53]/40 rounded">
+                    <div className="p-2 bg-[#e06d53]/15 border border-[#e06d53]/40 rounded"
+                      style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.4), 0 2px 4px rgba(0,0,0,.08)' }}>
                       <div className="font-editorial-mono text-[9px] uppercase opacity-70">Em aberto</div>
                       <div className="font-editorial-title font-bold text-sm text-[#7a2214]">R$ {formatBRL(monthPending)}</div>
                     </div>
                   </div>
 
-                  {/* QUEM FALTA PAGAR — com Total / Pago / Falta */}
                   <div className="mt-5 pt-4 border-t-2 border-dashed border-[#7a6a58]/40">
                     <h4 className="font-editorial-title text-xs font-bold uppercase mb-3 text-[#7a2214] flex items-center gap-2">
                       ⚠️ Falta Pagar neste Mês
                     </h4>
-                    <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                    <div className="space-y-2 max-h-72 overflow-y-auto pr-1 debtor-scroll">
                       {monthDebtors.length === 0 ? (
                         <div className="text-center py-3">
                           <span className="font-editorial-script text-xl opacity-70 block">Todos quitados ✦</span>
@@ -1356,21 +1705,23 @@ export default function App() {
                         monthDebtors.map(b => (
                           <div
                             key={b.id}
-                            className="p-2 rounded border transition-all hover:scale-[1.02]"
+                            className="p-2 rounded border transition-all hover:scale-[1.02] hover:-translate-y-0.5"
                             style={{
                               background: 'linear-gradient(135deg, rgba(207,195,171,.35) 0%, rgba(207,195,171,.15) 100%)',
-                              borderColor: 'rgba(181, 162, 137, 0.5)'
+                              borderColor: 'rgba(181, 162, 137, 0.5)',
+                              boxShadow: '0 3px 6px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.5)'
                             }}
                           >
                             <div className="flex items-center gap-2">
                               <div
-                                className="w-9 h-9 rounded-full flex items-center justify-center font-editorial-title font-bold text-[11px] shrink-0 shadow-md"
+                                className="w-9 h-9 rounded-full flex items-center justify-center font-editorial-title font-bold text-[11px] shrink-0"
                                 style={{
                                   background: b.depositPaid
                                     ? 'linear-gradient(135deg, #e5a53c, #c98a2a)'
                                     : 'linear-gradient(135deg, #b33a26, #7a2214)',
                                   color: '#f5ebd6',
-                                  border: '2px solid rgba(245,235,214,.4)'
+                                  border: '2px solid rgba(245,235,214,.4)',
+                                  boxShadow: '0 4px 8px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.3)'
                                 }}
                               >
                                 {initialsOf(b.guestName)}
@@ -1390,7 +1741,6 @@ export default function App() {
                                 </div>
                               </div>
                             </div>
-                            {/* Linha de detalhes: Total / Pago / Falta */}
                             <div className="grid grid-cols-3 gap-1 mt-2 pt-2 border-t border-[#b5a289]/40 font-editorial-mono text-[9px]">
                               <div className="text-center">
                                 <div className="opacity-60 uppercase">Total</div>
@@ -1416,15 +1766,15 @@ export default function App() {
 
             <Paper rot={0.4} depth={6} front={<span className="tape" />}>
               <div className="paper-card-inner bg-ledger p-8 shape-torn-deckle border-t-4 border-[#7a2214]">
-                <h3 className="font-editorial-title text-xl font-bold uppercase mb-4">📑 Ledger Backup & Restore</h3>
+                <h3 className="font-editorial-title text-xl font-bold uppercase mb-4 emboss-text">📑 Ledger Backup & Restore</h3>
                 <p className="font-editorial-body text-base mb-6">
                   Exporte ou restaure todos os registros financeiros e fichas de hóspedes em arquivo JSON seguro.
                 </p>
                 <div className="flex flex-col md:flex-row gap-4">
-                  <button onClick={exportBackup} className="flex-1 py-4 bg-[#3d4e41] text-[#f5ebd6] font-editorial-title text-xs font-bold uppercase tracking-widest shape-torn-deckle cursor-pointer-forced shadow-md">
+                  <button onClick={exportBackup} className="btn-3d flex-1 py-4 bg-[#3d4e41] text-[#f5ebd6] font-editorial-title text-xs font-bold uppercase tracking-widest shape-torn-deckle cursor-pointer-forced">
                     ⬇ Baixar Backup Completo (JSON)
                   </button>
-                  <label className="flex-1 py-4 bg-[#7a2214] text-[#f5ebd6] font-editorial-title text-xs font-bold uppercase tracking-widest text-center cursor-pointer shape-torn-deckle shadow-md">
+                  <label className="btn-3d flex-1 py-4 bg-[#7a2214] text-[#f5ebd6] font-editorial-title text-xs font-bold uppercase tracking-widest text-center cursor-pointer shape-torn-deckle">
                     ⬆ Restaurar de Arquivo JSON
                     <input type="file" accept=".json" onChange={importBackup} className="hidden" />
                   </label>
@@ -1437,11 +1787,12 @@ export default function App() {
         {/* ==================== TAB 5: CALENDAR ==================== */}
         {activeTab === 'calendar' && (
           <div className="space-y-12 rise">
-            <SectionHeader n="V." title="Calendário & Agenda — Packs Temáticos (12 Imagens)" />
+            <SectionHeader n="V." title="Calendário & Agenda — Packs Temáticos" />
 
+            {/* Pack picker */}
             <div className="dark-panel p-5 shape-torn-deckle flex flex-col md:flex-row items-center justify-between gap-4 border border-[#8ebf95]/40 shadow-lg">
               <div>
-                <span className="font-editorial-title text-sm uppercase font-bold text-[#8ebf95] block">
+                <span className="font-editorial-title text-sm uppercase font-bold text-[#8ebf95] block emboss-text">
                   🎨 Pacote de Imagens Ativo:
                 </span>
                 <span className="font-editorial-mono text-xs text-[#8c7a65]">{activePack.description}</span>
@@ -1450,9 +1801,9 @@ export default function App() {
                 {IMAGE_PACKS.map((pack) => (
                   <button key={pack.id}
                     onClick={() => { setSelectedPackId(pack.id); triggerSound('click') }}
-                    className={`px-4 py-2 font-editorial-title text-xs uppercase font-bold shape-torn-deckle transition-all cursor-pointer-forced ${
+                    className={`btn-3d px-4 py-2 font-editorial-title text-xs uppercase font-bold shape-torn-deckle transition-all cursor-pointer-forced ${
                       selectedPackId === pack.id
-                        ? 'bg-[#8ebf95] text-[#0d1611] scale-105 shadow-lg'
+                        ? 'bg-[#8ebf95] text-[#0d1611]'
                         : 'bg-[#1c140e] text-[#e5dec9] hover:bg-[#3d4e41] border border-[#3d4e41]'
                     }`}>
                     {pack.name}
@@ -1461,113 +1812,152 @@ export default function App() {
               </div>
             </div>
 
-            {/* CALENDÁRIO PREMIUM com pilha de papéis atrás */}
-            <Paper rot={0} depth={8} className="no-hover" stack={3} front={<span className="tape" style={{ width: 140, marginLeft: -70 }} />}>
-              <div className="paper-card-inner bg-crosshatch p-6 md:p-8 shape-premium border-4 border-[#3d4e41] shadow-2xl relative overflow-hidden">
+            {/* ===== HERO: IMAGEM COMO PROTAGONISTA, com tilt 3D + click-to-expand ===== */}
+            <div className="hero-3d-scene">
+              <div
+                ref={heroTiltRef}
+                {...heroHandlers}
+                onClick={() => { setExpandedImage(currentCalendarImage); triggerSound('whoosh') }}
+                className="hero-3d-card relative w-full rounded-md overflow-hidden border-2 border-[#3d4e41] cursor-pointer group"
+                style={{ minHeight: 'clamp(460px, 72vh, 760px)' }}
+                title="Clique para expandir"
+              >
+                {/* imagem com profundidade */}
+                <img
+                  src={currentCalendarImage}
+                  alt={activePack.name}
+                  className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+                  style={{
+                    filter: 'sepia(.06) contrast(1.05) saturate(1.1)',
+                  }}
+                />
+                {/* scrims para legibilidade */}
+                <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#1c140e]/85 via-[#1c140e]/25 to-transparent pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-[#1c140e]/95 via-[#1c140e]/40 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 pointer-events-none"
+                  style={{ background: 'radial-gradient(ellipse at 50% 55%, transparent 42%, rgba(0,0,0,.4) 100%)' }} />
+                {/* moldura 3D interna */}
+                <div className="absolute inset-0 pointer-events-none frame-3d-inset" />
 
-                {/* BINDING premium (fita decorativa em vez de espiral visível) */}
-                <div className="flex justify-center gap-3 mb-5 opacity-90 relative z-20">
-                  {Array.from({ length: 24 }).map((_, i) => (
-                    <div key={i} className="w-6 h-1.5 bg-gradient-to-b from-[#d4b87a] via-[#8a7658] to-[#5a4a32] rounded-sm shadow-sm" />
-                  ))}
-                </div>
+                {/* cantos vintage */}
+                <div className="absolute top-4 left-4 w-10 h-10 border-t-2 border-l-2 border-[#8ebf95]/70 pointer-events-none z-20" />
+                <div className="absolute top-4 right-4 w-10 h-10 border-t-2 border-r-2 border-[#8ebf95]/70 pointer-events-none z-20" />
+                <div className="absolute bottom-4 left-4 w-10 h-10 border-b-2 border-l-2 border-[#8ebf95]/70 pointer-events-none z-20" />
+                <div className="absolute bottom-4 right-4 w-10 h-10 border-b-2 border-r-2 border-[#8ebf95]/70 pointer-events-none z-20" />
 
-                <div className="flex flex-col md:flex-row justify-between items-center mb-5 pb-4 gap-4 relative z-20 border-b-2 border-[#3d4e41]">
-                  <div className="text-center md:text-left">
-                    <span className="font-editorial-script text-3xl md:text-4xl text-[#7a2214] block leading-none">
+                {/* topo: título do pack + navegação de mês */}
+                <div className="relative z-30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 md:p-7">
+                  <div>
+                    <span className="font-editorial-script text-3xl md:text-5xl text-[#f5ebd6] block leading-none"
+                      style={{ textShadow: '0 3px 12px rgba(0,0,0,.8)' }}>
                       {activePack.name}
                     </span>
-                    <span className="font-editorial-mono text-[10px] tracking-[0.5em] text-[#3d4e41] uppercase mt-1 block">✦ EST. 1990 ✦ FLORIANÓPOLIS ✦</span>
+                    <span className="font-editorial-mono text-[10px] tracking-[0.5em] text-[#8ebf95] uppercase mt-1 block"
+                      style={{ textShadow: '0 1px 4px rgba(0,0,0,.9)' }}>
+                      ✦ EST. 1990 ✦ FLORIANÓPOLIS ✦
+                    </span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation()
                         triggerSound('paper')
-                        if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(calendarYear - 1); }
-                        else setCalendarMonth(calendarMonth - 1);
+                        if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(calendarYear - 1) }
+                        else setCalendarMonth(calendarMonth - 1)
                       }}
-                      className="px-4 py-2 bg-[#3d4e41] text-[#f5ebd6] font-editorial-title text-[10px] uppercase font-bold tracking-widest shape-premium cursor-pointer-forced shadow hover:bg-[#4f6454] transition-colors">
+                      className="btn-3d px-4 py-2 bg-[#3d4e41]/95 text-[#f5ebd6] font-editorial-title text-[10px] uppercase font-bold tracking-widest shape-premium cursor-pointer-forced hover:bg-[#4f6454] transition-colors">
                       ← Mês Anterior
                     </button>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation()
                         triggerSound('paper')
-                        if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(calendarYear + 1); }
-                        else setCalendarMonth(calendarMonth + 1);
+                        if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(calendarYear + 1) }
+                        else setCalendarMonth(calendarMonth + 1)
                       }}
-                      className="px-4 py-2 bg-[#3d4e41] text-[#f5ebd6] font-editorial-title text-[10px] uppercase font-bold tracking-widest shape-premium cursor-pointer-forced shadow hover:bg-[#4f6454] transition-colors">
+                      className="btn-3d px-4 py-2 bg-[#3d4e41]/95 text-[#f5ebd6] font-editorial-title text-[10px] uppercase font-bold tracking-widest shape-premium cursor-pointer-forced hover:bg-[#4f6454] transition-colors">
                       Próximo Mês →
                     </button>
                   </div>
                 </div>
 
-                <div className="relative w-full grid grid-cols-1 lg:grid-cols-12 rounded-sm overflow-hidden shadow-2xl bg-[#1c140e] border-2 border-[#3d4e41]">
-                  <div className="relative lg:col-span-7 min-h-[420px] lg:min-h-[560px] overflow-hidden">
-                    <div className="absolute inset-0" style={{ transform: 'translate(calc(var(--mx) * -8px), calc(var(--my) * -8px)) scale(1.06)' }}>
-                      <img src={currentCalendarImage} alt="Pack Visual"
-                        className="w-full h-full object-cover object-top filter sepia-[0.08] contrast-105 saturate-110 transition-all duration-700" />
-                      <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-[#1c140e]/85 to-transparent" />
-                      <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#1c140e]/85 to-transparent hidden lg:block" />
-                    </div>
-                    <div className="absolute top-0 left-0 right-0 h-32 z-10 pointer-events-none opacity-20"
-                      style={{ background: 'radial-gradient(ellipse at top, #ffd778 0%, transparent 70%)' }} />
-                    <div className="absolute bottom-4 left-6 z-20 pointer-events-none">
-                      <span className="font-editorial-script text-3xl text-[#f5ebd6] drop-shadow-md block">{activePack.name}</span>
-                      <span className="font-editorial-mono text-[9px] text-[#8ebf95] tracking-[0.3em] uppercase">Mês {((calendarMonth % 12) + 1)} de 12 • Florianópolis Vintage Collection</span>
-                    </div>
+                {/* base: legenda do mês + grid flutuante em vidro fosco */}
+                <div className="absolute inset-x-0 bottom-0 z-30 flex flex-col md:flex-row items-end justify-between gap-5 p-5 md:p-7">
+                  <div className="hidden md:block">
+                    <h3 className="font-editorial-display text-2xl md:text-4xl text-[#f5ebd6] tracking-wide uppercase"
+                      style={{ textShadow: '0 3px 14px rgba(0,0,0,.9)' }}>
+                      {new Date(calendarYear, calendarMonth).toLocaleString('pt-BR', { month: 'long' })} {calendarYear}
+                    </h3>
+                    <span className="font-editorial-mono text-[9px] text-[#8ebf95] tracking-[0.3em] uppercase"
+                      style={{ textShadow: '0 1px 4px rgba(0,0,0,.9)' }}>
+                      Mês {((calendarMonth % 12) + 1)} de 12 • Agenda de Chalés
+                    </span>
                   </div>
 
-                  <div className="lg:col-span-5 p-6 md:p-8 bg-[#1a1714] text-[#e5dec9] flex flex-col justify-between border-l border-[#3d4e41]">
-                    <div>
-                      <div className="text-center pb-4 mb-4 border-b border-[#3d4e41]">
-                        <h3 className="font-editorial-display text-2xl md:text-3xl text-[#8ebf95] tracking-wide uppercase">
-                          {new Date(calendarYear, calendarMonth).toLocaleString('pt-BR', { month: 'long' })} {calendarYear}
-                        </h3>
-                        <span className="font-editorial-mono text-[9px] text-[#8c7a65] tracking-[0.2em] uppercase">Agenda de Chalés</span>
-                      </div>
-
-                      <div className="grid grid-cols-7 gap-1 text-center font-editorial-title text-xs font-bold text-[#8ebf95] mb-2">
-                        {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => <div key={i}>{d}</div>)}
-                      </div>
-
-                      <div className="grid grid-cols-7 gap-1.5 text-center font-editorial-mono text-xs">
-                        {(() => {
-                          const firstDay = new Date(calendarYear, calendarMonth, 1).getDay()
-                          const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate()
-                          const cells = []
-                          for (let i = 0; i < firstDay; i++) {
-                            cells.push(<div key={`empty-${i}`} className="p-2 opacity-10">—</div>)
-                          }
-                          for (let d = 1; d <= daysInMonth; d++) {
-                            const dateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-                            const dayBookings = bookings.filter(b => b.checkIn && b.checkOut && dateStr >= b.checkIn && dateStr <= b.checkOut)
-                            const hasBooking = dayBookings.length > 0
-                            cells.push(
-                              <div key={d} onClick={() => triggerSound('click')}
-                                title={hasBooking ? `Reservado: ${dayBookings.map(b => b.guestName).join(', ')}` : ''}
-                                className={`p-2 rounded flex flex-col items-center justify-center transition-all ${
-                                  hasBooking
-                                    ? 'bg-[#7a2214] text-[#f5ebd6] font-bold shadow-md cursor-pointer-forced scale-105'
-                                    : 'bg-[#0f0d0b] text-[#e5dec9] hover:bg-[#3d4e41]/40 cursor-pointer-forced'
-                                }`}>
-                                <span className="leading-none">{d}</span>
-                                {hasBooking && <span className="w-1.5 h-1.5 rounded-full bg-[#8ebf95] mt-1" />}
-                              </div>
-                            )
-                          }
-                          return cells
-                        })()}
-                      </div>
+                  <div className="w-full md:w-[340px] lg:w-[380px] shrink-0 rounded-md p-4"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(26,23,20,.9) 0%, rgba(15,13,11,.94) 100%)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(142,191,149,.4)',
+                      boxShadow: '0 20px 40px rgba(0,0,0,.6), 0 6px 0 rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1)'
+                    }}>
+                    <div className="md:hidden text-center mb-2">
+                      <h3 className="font-editorial-display text-lg text-[#f5ebd6] uppercase">
+                        {new Date(calendarYear, calendarMonth).toLocaleString('pt-BR', { month: 'long' })} {calendarYear}
+                      </h3>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-[#3d4e41] text-xs font-editorial-mono flex items-center justify-between text-[#8c7a65]">
+                    <div className="grid grid-cols-7 gap-1 text-center font-editorial-title text-[10px] font-bold text-[#8ebf95] mb-1.5">
+                      {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => <div key={i}>{d}</div>)}
+                    </div>
+
+                    <div className="grid grid-cols-7 gap-1 text-center font-editorial-mono text-[10px]">
+                      {(() => {
+                        const firstDay = new Date(calendarYear, calendarMonth, 1).getDay()
+                        const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate()
+                        const cells = []
+                        for (let i = 0; i < firstDay; i++) cells.push(<div key={`e-${i}`} className="p-1.5 opacity-10">—</div>)
+                        for (let d = 1; d <= daysInMonth; d++) {
+                          const dateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                          const dayBookings = bookings.filter(b => b.checkIn && b.checkOut && dateStr >= b.checkIn && dateStr <= b.checkOut)
+                          const hasBooking = dayBookings.length > 0
+                          cells.push(
+                            <div key={d} onClick={() => triggerSound('click')}
+                              title={hasBooking ? `Reservado: ${dayBookings.map(b => b.guestName).join(', ')}` : ''}
+                              className={`py-1.5 rounded flex flex-col items-center justify-center transition-all cursor-pointer-forced ${
+                                hasBooking
+                                  ? 'bg-[#7a2214] text-[#f5ebd6] font-bold scale-105'
+                                  : 'text-[#e5dec9] hover:bg-[#3d4e41]/60'
+                              }`}
+                              style={{
+                                boxShadow: hasBooking
+                                  ? '0 3px 6px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.18)'
+                                  : 'inset 0 1px 0 rgba(255,255,255,.05)'
+                              }}>
+                              <span className="leading-none">{d}</span>
+                              {hasBooking && <span className="w-1 h-1 rounded-full bg-[#8ebf95] mt-0.5"
+                                style={{ boxShadow: '0 0 5px 1px rgba(142,191,149,.75)' }} />}
+                            </div>
+                          )
+                        }
+                        return cells
+                      })()}
+                    </div>
+
+                    <div className="mt-3 pt-2 border-t border-[#3d4e41] text-[9px] font-editorial-mono flex items-center justify-between text-[#8c7a65]">
                       <span>✦ Vermelho = Reservado</span>
-                      <span>✦ Preto = Disponível</span>
+                      <span>✦ Livre</span>
                     </div>
                   </div>
                 </div>
+
+                {/* dica flutuante */}
+                <div className="hero-hint">
+                  Clique para expandir
+                </div>
               </div>
-            </Paper>
+            </div>
           </div>
         )}
 
@@ -1579,7 +1969,7 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <Paper rot={-0.6} depth={6} front={<span className="tape" />}>
                 <div className="paper-card-inner bg-crosshatch p-8 shape-torn-deckle border-t-4 border-[#3d4e41]">
-                  <h3 className="font-editorial-title text-xl font-bold uppercase mb-6">🎨 Aparência & Sons</h3>
+                  <h3 className="font-editorial-title text-xl font-bold uppercase mb-6 emboss-text">🎨 Aparência & Sons</h3>
                   <div className="space-y-6">
                     <div className="flex items-center justify-between border-b border-[#8c7d6b]/40 pb-4">
                       <div>
@@ -1587,19 +1977,18 @@ export default function App() {
                         <span className="font-editorial-mono text-xs text-[#7a6a58]">Alterne entre o pergaminho claro e o crepúsculo escuro.</span>
                       </div>
                       <button onClick={() => { setLightMode(!lightMode); triggerSound('click') }}
-                        className="px-4 py-2 bg-[#3d4e41] text-[#f5ebd6] font-editorial-title text-xs uppercase font-bold shape-torn-deckle cursor-pointer-forced shadow">
+                        className="btn-3d px-4 py-2 bg-[#3d4e41] text-[#f5ebd6] font-editorial-title text-xs uppercase font-bold shape-torn-deckle cursor-pointer-forced">
                         {lightMode ? '☀️ Modo Claro' : '🌙 Modo Escuro'}
                       </button>
                     </div>
 
-                    {/* NOVO: Modo de Layout */}
                     <div className="flex items-center justify-between border-b border-[#8c7d6b]/40 pb-4">
                       <div>
                         <span className="font-editorial-title font-bold block">Largura do Layout</span>
                         <span className="font-editorial-mono text-xs text-[#7a6a58]">Compacto (mobile) ou Tela Cheia (wide).</span>
                       </div>
                       <button onClick={() => { setLayoutMode(layoutMode === 'compact' ? 'wide' : 'compact'); triggerSound('click') }}
-                        className="px-4 py-2 bg-[#3d4e41] text-[#f5ebd6] font-editorial-title text-xs uppercase font-bold shape-torn-deckle cursor-pointer-forced shadow">
+                        className="btn-3d px-4 py-2 bg-[#3d4e41] text-[#f5ebd6] font-editorial-title text-xs uppercase font-bold shape-torn-deckle cursor-pointer-forced">
                         {isWide ? '📱 Modo Compacto' : '🖥️ Modo Tela Cheia'}
                       </button>
                     </div>
@@ -1610,7 +1999,7 @@ export default function App() {
                         <span className="font-editorial-mono text-xs text-[#7a6a58]">Sons vintage suaves acionados em botões e carimbos.</span>
                       </div>
                       <button onClick={() => { setSoundMuted(!soundMuted); if (soundMuted) playSound('chime', false) }}
-                        className="px-4 py-2 bg-[#3d4e41] text-[#f5ebd6] font-editorial-title text-xs uppercase font-bold shape-torn-deckle cursor-pointer-forced shadow">
+                        className="btn-3d px-4 py-2 bg-[#3d4e41] text-[#f5ebd6] font-editorial-title text-xs uppercase font-bold shape-torn-deckle cursor-pointer-forced">
                         {soundMuted ? '🔇 Sons: Desligados' : '🔔 Sons: Ativados'}
                       </button>
                     </div>
@@ -1627,7 +2016,7 @@ export default function App() {
 
               <Paper rot={0.6} depth={6} front={<span className="tape" />}>
                 <div className="paper-card-inner bg-crosshatch p-8 shape-torn-deckle border-t-4 border-[#7a2214]">
-                  <h3 className="font-editorial-title text-xl font-bold uppercase mb-6">⚙️ Identidade & Pacote de Imagens</h3>
+                  <h3 className="font-editorial-title text-xl font-bold uppercase mb-6 emboss-text">⚙️ Identidade & Pacote de Imagens</h3>
                   <div className="space-y-6">
                     <Field label="Nome do Proprietário / Administrador">
                       <input type="text" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} className={INK} />
@@ -1646,6 +2035,30 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {/* ==================== LIGHTBOX ==================== */}
+      {expandedImage && (
+        <div className="lightbox-backdrop" onClick={() => { setExpandedImage(null); triggerSound('paper') }}>
+          <div className="lightbox-stage" onClick={(e) => e.stopPropagation()}>
+            <div
+              ref={lightboxTiltRef}
+              {...lightboxHandlers}
+              className="lightbox-card"
+            >
+              <img src={expandedImage} alt="Imagem expandida" />
+              <button
+                onClick={(e) => { e.stopPropagation(); setExpandedImage(null); triggerSound('click') }}
+                className="lightbox-close"
+                title="Fechar (Esc)"
+              >×</button>
+              <div className="lightbox-label">
+                <span>{activePack.name}</span>
+                {new Date(calendarYear, calendarMonth).toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
